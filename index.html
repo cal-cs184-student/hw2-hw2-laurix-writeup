@@ -28,15 +28,15 @@
 	<body>
 		<div class="container">
 		<h1>CS184/284A Fall 2026 Homework 2 Write-Up</h1>
-		<div style="text-align: center;">Names: </div>
+		<div style="text-align: center;">Name: Laura Nagamine </div>
 
 		<br>
 
-		Link to webpage: (TODO) <a href="https://cs184.eecs.berkeley.edu/fa26">cs184.eecs.berkeley.edu/fa26</a>
+		Link to webpage: <a href="https://cal-cs184-student.github.io/hw2-hw2-laurix-writeup/">https://cal-cs184-student.github.io/hw2-hw2-laurix-writeup/</a>
 
 		<br>
 		
-		Link to GitHub repository: (TODO) <a href="https://cs184.eecs.berkeley.edu/fa26">cs184.eecs.berkeley.edu/fa26</a>
+		Link to GitHub repository: <a href="https://github.com/cal-cs184-student/hw2-hw2-laurix">https://github.com/cal-cs184-student/hw2-hw2-laurix</a>
 
 		<figure>
 			<img src="assets/teapot.png" alt="Teapot" style="width:50%"/>
@@ -144,7 +144,37 @@
 		<h2>Section II: Triangle Meshes and Half-Edge Data Structure</h2>
 
 		<h3>Part 3: Area-weighted vertex normals</h3>
-		Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+		<p>
+		Without vertex normals, every triangle gets one flat normal, so the mesh looks blocky and you can clearly see each face. To make it look smooth, we give each vertex its own normal by averaging the normals of all the triangles around it. Bigger triangles should count more, so it's an area-weighted average.
+		</p>
+		<p>
+		I implemented this in <code>Vertex::normal</code>. I start with a zero vector \( n \) and grab one of the vertex's halfedges. Then I walk around the vertex one face at a time using <code>h = h->twin()->next()</code>. Taking the twin flips to the other side of the edge, and next moves to the next edge going out of the same vertex. I keep going until I'm back at the halfedge I started with, so I visit every face around the vertex exactly once.
+		</p>
+		<p>
+		For each face, I first check that it's not a boundary face, because boundary "faces" are just holes in the mesh and not real triangles. If it's a real triangle, I get its three vertex positions: \( p_0 \) is the vertex itself, and \( p_1 \) and \( p_2 \) come from <code>h->next()</code> and <code>h->next()->next()</code>. Then I take the cross product of two of its edges:
+		</p>
+		\[ (p_1 - p_0) \times (p_2 - p_0) \]
+		<p>
+		This vector points in the direction of the face's normal, and its length is twice the triangle's area. So if I just add it to \( n \) without normalizing it first, bigger triangles automatically count more. That gives me the area weighting without having to compute the areas separately. At the end, I return <code>n.unit()</code> so the final normal has length 1.
+		</p>
+		<p>
+		Below is <code>dae/teapot.dae</code> with flat shading (the default) and with Phong shading using my vertex normals (pressing Q). With flat shading you can see the edges of every triangle. With Phong shading the teapot looks smooth and the lighting blends nicely across the surface.
+		</p>
+
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: 100%; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="assets/part3_flat.png" width="400px"/>
+				  <figcaption>Teapot with flat shading (no vertex normals)</figcaption>
+				</td>
+				<td style="text-align: center;">
+				  <img src="assets/part3_phong.png" width="400px"/>
+				  <figcaption>Teapot with Phong shading (area-weighted vertex normals)</figcaption>
+				</td>
+			  </tr>
+			</table>
+		</div>
 
 		<h3>Part 4: Edge flip</h3>
 		Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
