@@ -53,36 +53,93 @@
 		<h2>Section I: Bezier Curves and Surfaces</h2>
 
 		<h3>Part 1: Bezier curves with 1D de Casteljau subdivision</h3>
-		Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+		<p>
+		De Casteljau's algorithm is a way to find a point on a Bezier curve using only linear interpolation (lerp). You start with the control points and a value of \( t \) between 0 and 1. For every pair of neighboring points, you find the point that is a fraction \( t \) of the way from the first point to the second:
+		</p>
+		\[ p_i' = (1 - t)\,p_i + t\,p_{i+1} \]
+		<p>
+		If you start with \( n \) points, this gives you \( n - 1 \) new points. Then you do the same thing again on the new points, and again, until only one point is left. That last point is the point on the Bezier curve at \( t \). If you do this for every \( t \) from 0 to 1, you trace out the whole curve.
+		</p>
+		<p>
+		For my implementation, I wrote <code>BezierCurve::evaluateStep</code>, which does just one level of the algorithm. It loops over the input points, and for each pair of neighbors (point \( i \) and point \( i+1 \)) it computes \( (1 - t)\,p_i + t\,p_{i+1} \) and adds it to a new vector. Since the loop stops one point before the end, the output always has one less point than the input. The program calls this function over and over (each time I press E), so you can see every level until it reaches the final point on the curve.
+		</p>
+		<p>
+		I made my own Bezier curve with 6 control points. The screenshots below show each level of the evaluation, starting from the 6 original control points and ending with the single evaluated point.
+		</p>
 
-		<p>Here is an example 2x2 gridlike structure using an HTML table. Each <b>tr</b> is a row and each <b>td</b> is a column in that row. You might find this useful for framing and showing your result images in an organized fashion.</p>
 		<div style="display: flex; flex-direction: column; align-items: center;">
 			<table style="width: 100%; text-align: center; border-collapse: collapse;">
 			  <tr>
 				<td style="text-align: center;">
-				  <img src="assets/teapot.png" width="400px"/>
-				  <figcaption>Caption goes here.</figcaption>
+				  <img src="assets/part1_level0.png" width="400px"/>
+				  <figcaption>Level 0: the 6 original control points</figcaption>
 				</td>
 				<td style="text-align: center;">
-				  <img src="assets/teapot.png" width="400px"/>
-				  <figcaption>Caption goes here.</figcaption>
+				  <img src="assets/part1_level1.png" width="400px"/>
+				  <figcaption>Level 1: 5 intermediate points</figcaption>
 				</td>
 			  </tr>
 			  <tr>
 				<td style="text-align: center;">
-				  <img src="assets/teapot.png" width="400px"/>
-				  <figcaption>Caption goes here.</figcaption>
+				  <img src="assets/part1_level2.png" width="400px"/>
+				  <figcaption>Level 2: 4 intermediate points</figcaption>
 				</td>
 				<td style="text-align: center;">
-				  <img src="assets/teapot.png" width="400px"/>
-				  <figcaption>Caption goes here.</figcaption>
+				  <img src="assets/part1_level3.png" width="400px"/>
+				  <figcaption>Level 3: 3 intermediate points</figcaption>
+				</td>
+			  </tr>
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="assets/part1_level4.png" width="400px"/>
+				  <figcaption>Level 4: 2 intermediate points</figcaption>
+				</td>
+				<td style="text-align: center;">
+				  <img src="assets/part1_level5.png" width="400px"/>
+				  <figcaption>Level 5: the final evaluated point on the curve</figcaption>
 				</td>
 			  </tr>
 			</table>
 		</div>
 
+		<p>
+		Here is the same curve with all the levels shown and the full Bezier curve turned on (pressing C). You can see that the final point lands exactly on the curve.
+		</p>
+		<figure>
+			<img src="assets/part1_full_curve.png" width="400px"/>
+			<figcaption>All levels plus the completed Bezier curve</figcaption>
+		</figure>
+
+		<p>
+		Finally, I moved some of the control points around and scrolled to change \( t \). The curve changes shape to follow the new control points, and the evaluated point slides to a different spot along the curve.
+		</p>
+		<figure>
+			<img src="assets/part1_modified.png" width="400px"/>
+			<figcaption>A slightly different curve after moving the control points and changing t</figcaption>
+		</figure>
+
 		<h3>Part 2: Bezier surfaces with separable 1D de Casteljau</h3>
-		Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+		<p>
+		A Bezier surface works a lot like a Bezier curve, but now there are two parameters, \( u \) and \( v \), and the control points are in a grid instead of a line. For a bicubic patch like the ones in the teapot, the grid is 4x4, so there are 16 control points.
+		</p>
+		<p>
+		The idea is that you can split the problem into two rounds of 1D de Casteljau. First, you treat each row of the grid as its own Bezier curve and evaluate it at \( u \). That gives you one point per row (so 4 points for a 4x4 grid). Then, you treat those 4 points as a new Bezier curve going in the other direction and evaluate it at \( v \). The single point you get at the end is the point on the surface at \( (u, v) \). This is why it's called "separable": you handle one direction at a time.
+		</p>
+		<p>
+		I implemented it with three functions:
+		</p>
+		<ul>
+			<li><code>BezierPatch::evaluateStep</code> does one level of de Casteljau on 3D points. It's the same as in Part 1 (lerp every pair of neighbors), but it uses <code>Vector3D</code> and takes \( t \) as an argument.</li>
+			<li><code>BezierPatch::evaluate1D</code> runs the full algorithm on a list of points. It keeps calling <code>evaluateStep</code> until only one point is left, then returns that point.</li>
+			<li><code>BezierPatch::evaluate</code> puts it all together. It loops over every row in <code>controlPoints</code>, calls <code>evaluate1D</code> on the row with \( u \), and saves the result. Then it calls <code>evaluate1D</code> one more time on those saved points with \( v \) and returns the final point.</li>
+		</ul>
+		<p>
+		The program calls <code>evaluate</code> at a bunch of \( (u, v) \) values across each patch and connects the results into triangles, which is how the teapot below gets rendered.
+		</p>
+		<figure>
+			<img src="assets/part2_teapot.png" width="500px"/>
+			<figcaption>bez/teapot.bez evaluated with my implementation</figcaption>
+		</figure>
 
 		<h2>Section II: Triangle Meshes and Half-Edge Data Structure</h2>
 
