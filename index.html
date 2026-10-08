@@ -60,6 +60,7 @@
 		<h2>Section I: Bezier Curves and Surfaces</h2>
 
 		<h3>Part 1: Bezier curves with 1D de Casteljau subdivision</h3>
+		<h4>How de Casteljau's algorithm works and how I implemented it</h4>
 		<p>
 		De Casteljau's algorithm is a way to find a point on a Bezier curve using only linear interpolation (lerp). You start with the control points and a value of \( t \) between 0 and 1. For every pair of neighboring points, you find the point that is a fraction \( t \) of the way from the first point to the second:
 		</p>
@@ -70,6 +71,7 @@
 		<p>
 		For my implementation, I wrote <code>BezierCurve::evaluateStep</code>, which does just one level of the algorithm. It loops over the input points, and for each pair of neighbors (point \( i \) and point \( i+1 \)) it computes \( (1 - t)\,p_i + t\,p_{i+1} \) and adds it to a new vector. Since the loop stops one point before the end, the output always has one less point than the input. The program calls this function over and over (each time I press E), so you can see every level until it reaches the final point on the curve.
 		</p>
+		<h4>Each level of the evaluation</h4>
 		<p>
 		I made my own Bezier curve with 6 control points. The screenshots below show each level of the evaluation, starting from the 6 original control points and ending with the single evaluated point.
 		</p>
@@ -117,6 +119,7 @@
 			<figcaption>All levels plus the completed Bezier curve</figcaption>
 		</figure>
 
+		<h4>A slightly different Bezier curve</h4>
 		<p>
 		Finally, I moved some of the control points around and scrolled to change \( t \). The curve changes shape to follow the new control points, and the evaluated point slides to a different spot along the curve.
 		</p>
@@ -126,12 +129,14 @@
 		</figure>
 
 		<h3>Part 2: Bezier surfaces with separable 1D de Casteljau</h3>
+		<h4>How de Casteljau extends to Bezier surfaces</h4>
 		<p>
 		A Bezier surface works a lot like a Bezier curve, but now there are two parameters, \( u \) and \( v \), and the control points are in a grid instead of a line. For a bicubic patch like the ones in the teapot, the grid is 4x4, so there are 16 control points.
 		</p>
 		<p>
 		The idea is that you can split the problem into two rounds of 1D de Casteljau. First, you treat each row of the grid as its own Bezier curve and evaluate it at \( u \). That gives you one point per row (so 4 points for a 4x4 grid). Then, you treat those 4 points as a new Bezier curve going in the other direction and evaluate it at \( v \). The single point you get at the end is the point on the surface at \( (u, v) \). This is why it's called "separable": you handle one direction at a time.
 		</p>
+		<h4>How I implemented it</h4>
 		<p>
 		I implemented it with three functions:
 		</p>
@@ -140,6 +145,7 @@
 			<li><code>BezierPatch::evaluate1D</code> runs the full algorithm on a list of points. It keeps calling <code>evaluateStep</code> until only one point is left, then returns that point.</li>
 			<li><code>BezierPatch::evaluate</code> uses the other two. It loops over every row in <code>controlPoints</code>, calls <code>evaluate1D</code> on the row with \( u \), and saves the result. Then it calls <code>evaluate1D</code> one more time on those saved points with \( v \) and returns the final point.</li>
 		</ul>
+		<h4>Teapot (bez/teapot.bez)</h4>
 		<p>
 		The program calls <code>evaluate</code> at a bunch of \( (u, v) \) values across each patch and connects the results into triangles, which is how the teapot below gets rendered.
 		</p>
@@ -151,6 +157,7 @@
 		<h2>Section II: Triangle Meshes and Half-Edge Data Structure</h2>
 
 		<h3>Part 3: Area-weighted vertex normals</h3>
+		<h4>How I implemented area-weighted vertex normals</h4>
 		<p>
 		Without vertex normals, every triangle gets one flat normal, so the mesh looks blocky and you can clearly see each face. To make it look smooth, we give each vertex its own normal by averaging the normals of all the triangles around it. Bigger triangles should count more, so it's an area-weighted average.
 		</p>
@@ -164,6 +171,7 @@
 		<p>
 		This vector points in the direction of the face's normal, and its length is twice the triangle's area. So if I just add it to \( n \) without normalizing it first, bigger triangles automatically count more. That gives me the area weighting without having to compute the areas separately. At the end, I return <code>n.unit()</code> so the final normal has length 1.
 		</p>
+		<h4>Shading with and without vertex normals</h4>
 		<p>
 		Below is <code>dae/teapot.dae</code> with flat shading (the default) and with Phong shading using my vertex normals (pressing Q). With flat shading you can see the edges of every triangle. With Phong shading the teapot looks smooth and the lighting changes gradually across the surface.
 		</p>
@@ -184,6 +192,7 @@
 		</div>
 
 		<h3>Part 4: Edge flip</h3>
+		<h4>How I implemented edge flip</h4>
 		<p>
 		An edge flip takes two triangles that share an edge and swaps that edge to connect the other two corners instead. If the two triangles are (b, c, a) and (c, b, d) sharing edge (b, c), after the flip they become (a, d, c) and (d, a, b) sharing edge (a, d). No elements get added or deleted. We just have to rewire the pointers.
 		</p>
@@ -196,6 +205,7 @@
 		<p>
 		Finally, I update the halfedge pointers of the vertices, the edge, and the faces. This step is easy to forget. Vertices b and c might have been pointing at h0 or h3, but after the flip those halfedges don't start at b or c anymore. So I set every vertex's halfedge to one that I know still leaves it. To be safe, I reassigned the pointers for every element that was touched, even the ones that might not have changed. It's a few extra lines, but then I don't have to worry about missing one.
 		</p>
+		<h4>Teapot before and after edge flips</h4>
 		<p>
 		Here is the teapot before and after a few edge flips:
 		</p>
@@ -216,6 +226,7 @@
 
 
 		<h3>Part 5: Edge split</h3>
+		<h4>How I implemented edge split</h4>
 		<p>
 		An edge split adds a new vertex m at the midpoint of an edge (b, c) and connects it to the two opposite corners a and d. So the 2 triangles turn into 4. Unlike the flip, this one creates new stuff: 1 vertex, 3 edges, 6 halfedges, and 2 faces.
 		</p>
@@ -228,6 +239,7 @@
 		<p>
 		I also set the <code>isNew</code> flags here because Part 6 needs them. m is marked as a new vertex. e0 and e1 are pieces of the original edge, so they are not new, while e2 and e3 are the new edges that cut across. For boundary edges, my implementation just returns without splitting, so I didn't do the boundary extra credit.
 		</p>
+		<h4>Before and after edge splits</h4>
 		<p>
 		Here is a mesh before and after some edge splits:
 		</p>
@@ -246,8 +258,9 @@
 			</table>
 		</div>
 
+		<h4>Before and after edge splits and flips</h4>
 		<p>
-		And here is a mesh before and after a mix of edge splits and edge flips:
+		Here is a mesh before and after a mix of edge splits and edge flips:
 		</p>
 		<div style="display: flex; flex-direction: column; align-items: center;">
 			<table style="width: 100%; text-align: center; border-collapse: collapse;">
@@ -266,6 +279,7 @@
 
 
 		<h3>Part 6: Loop subdivision for mesh upsampling</h3>
+		<h4>How I implemented Loop subdivision</h4>
 		<p>
 		Loop subdivision makes a mesh smoother by turning every triangle into 4 smaller triangles and then moving the vertices to new, smoother positions. I implemented it in <code>MeshResampler::upsample</code> using 5 steps.
 		</p>
@@ -280,7 +294,7 @@
 		One important thing was computing all the new positions in steps 1 and 2 before changing the mesh at all. If you split edges or move vertices first, the neighbor positions used in the formulas are already wrong. The <code>isNew</code> flags I set inside <code>splitEdge</code> in Part 5 are what make step 4 work. Only the cross edges (e2 and e3) are marked new, so the halves of the original edges never get flipped.
 		</p>
 
-		<h4>Sharp corners and edges</h4>
+		<h4>Sharp corners and edges after subdivision</h4>
 		<p>
 		After a few rounds of loop subdivision, the mesh gets much smoother, but sharp corners and edges get rounded off and the whole shape shrinks a little. This happens because each vertex is moved toward a weighted average of its neighbors, so any pointy spot gets pulled in. You can reduce this by pre-splitting edges near the sharp corner or edge. That adds more vertices close to the corner, so each vertex's neighbors are nearby and the averaging pulls it in less. The corner stays sharper after subdivision.
 		</p>
@@ -299,7 +313,7 @@
 			</table>
 		</div>
 
-		<h4>Cube asymmetry</h4>
+		<h4>Cube asymmetry and pre-processing</h4>
 		<p>
 		When I load <code>dae/cube.dae</code> and subdivide it several times, it turns into a rounded blob that is slightly lopsided instead of a perfectly symmetric shape.
 		</p>
@@ -343,8 +357,7 @@
 		</div>
 
 		<h2>(Optional) Section III: Potential Extra Credit - Art Competition: Model something Creative</h2>
-		Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-
+		Submitted!
 		
 		</ul>
 		</div>
