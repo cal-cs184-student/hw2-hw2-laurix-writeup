@@ -38,17 +38,24 @@
 		
 		Link to GitHub repository: <a href="https://github.com/cal-cs184-student/hw2-hw2-laurix">https://github.com/cal-cs184-student/hw2-hw2-laurix</a>
 
-		<figure>
-			<img src="assets/teapot.png" alt="Teapot" style="width:50%"/>
-			<figcaption>You can add images with captions!</figcaption>
-		</figure>
 
 		<!--
 		We've already added one heading per part, to make your write-up as navigable when grading. Please fit your write-up within these sections!
 		-->
 
 		<h2>Overview</h2>
-		Give a high-level overview of what you implemented in this homework. Think about what you've built as a whole. Share your thoughts on what interesting things you've learned from completing the homework.
+		<p>
+		In this homework I worked on two ways to represent 3D shapes: Bezier curves and surfaces, and triangle meshes.
+		</p>
+		<p>
+		In Section 1, I used de Casteljau's algorithm to evaluate Bezier curves by repeatedly interpolating between control points. Then I extended it to Bezier surfaces by running the same 1D algorithm in two directions, which was enough to render the teapot from its control points.
+		</p>
+		<p>
+		In Section 2, I worked with triangle meshes stored in a half-edge data structure. I computed area-weighted vertex normals for smooth shading, implemented edge flips and edge splits, and then used those two operations to build Loop subdivision, which makes a mesh smoother by splitting each triangle into 4 and moving the vertices.
+		</p>
+		<p>
+		The most interesting thing I learned was how much you can build out of a few simple operations. 
+		</p>
 
 		<h2>Section I: Bezier Curves and Surfaces</h2>
 
