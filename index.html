@@ -302,12 +302,12 @@
 			<table style="width: 100%; text-align: center; border-collapse: collapse;">
 			  <tr>
 				<td style="text-align: center;">
-				  <img src="assets/part6_corner_before.png" width="400px"/>
-				  <figcaption>[TODO: mesh with sharp corners after subdividing, no pre-splitting]</figcaption>
+				  <img src="assets/part6/1/Screenshot%202026-10-09%20at%2016.07.03.png" width="400px"/>
+				  <figcaption>Cube after 4 subdivisions, no pre-splitting</figcaption>
 				</td>
 				<td style="text-align: center;">
-				  <img src="assets/part6_corner_presplit.png" width="400px"/>
-				  <figcaption>[TODO: same mesh with edges near the corners pre-split, then subdivided]</figcaption>
+				  <img src="assets/part6/2/Screenshot%202026-10-09%20at%2016.21.44.png" width="400px"/>
+				  <figcaption>Cube with a few edges pre-split on the front face, after 4 subdivisions</figcaption>
 				</td>
 			  </tr>
 			</table>
@@ -321,16 +321,16 @@
 			<table style="width: 100%; text-align: center; border-collapse: collapse;">
 			  <tr>
 				<td style="text-align: center;">
-				  <img src="assets/part6_cube_0.png" width="300px"/>
+				  <img src="assets/part6/1/Screenshot%202026-10-09%20at%2016.06.37.png" width="300px"/>
 				  <figcaption>Original cube</figcaption>
 				</td>
 				<td style="text-align: center;">
-				  <img src="assets/part6_cube_1.png" width="300px"/>
+				  <img src="assets/part6/1/Screenshot%202026-10-09%20at%2016.06.45.png" width="300px"/>
 				  <figcaption>After 1 subdivision</figcaption>
 				</td>
 				<td style="text-align: center;">
-				  <img src="assets/part6_cube_3.png" width="300px"/>
-				  <figcaption>After 3+ subdivisions (asymmetric)</figcaption>
+				  <img src="assets/part6/1/Screenshot%202026-10-09%20at%2016.07.03.png" width="300px"/>
+				  <figcaption>After 4 subdivisions (asymmetric)</figcaption>
 				</td>
 			  </tr>
 			</table>
@@ -339,18 +339,18 @@
 		This happens because of how the cube is triangulated. Each square face is cut into 2 triangles by a single diagonal, and the diagonals don't go the same way relative to every corner. So some corners of the cube touch more edges than others, meaning the vertices have different degrees. The Loop rule depends on a vertex's degree and its neighbors, so corners with different degrees get moved by different amounts. So the cube gets pulled more in some directions than others.
 		</p>
 		<p>
-		To fix this, you can pre-process the cube by splitting the diagonal edge on each of the 6 faces. This puts a new vertex in the center of every face and turns each face into 4 triangles that meet in the middle. Now every face looks exactly the same and every corner of the cube has the same degree with the same kind of neighbors. Since everything is symmetric before subdividing, the Loop rule moves everything the same way and the cube subdivides symmetrically.
+		To fix this, I pre-processed the cube by splitting the diagonal edge on each of the 6 faces. This puts a new vertex in the center of every face and turns each face into 4 triangles that meet in the middle. Now every face looks exactly the same and every corner of the cube has the same degree with the same kind of neighbors. Since everything is symmetric before subdividing, the Loop rule moves everything the same way and the cube subdivides symmetrically.
 		</p>
 		<div style="display: flex; flex-direction: column; align-items: center;">
 			<table style="width: 100%; text-align: center; border-collapse: collapse;">
 			  <tr>
 				<td style="text-align: center;">
-				  <img src="assets/part6_cube_presplit.png" width="400px"/>
+				  <img src="assets/part6/3/Screenshot%202026-10-09%20at%2016.25.43.png" width="400px"/>
 				  <figcaption>Cube after splitting the diagonal on every face</figcaption>
 				</td>
 				<td style="text-align: center;">
-				  <img src="assets/part6_cube_presplit_subdiv.png" width="400px"/>
-				  <figcaption>Pre-split cube after 3+ subdivisions (symmetric)</figcaption>
+				  <img src="assets/part6/3/Screenshot%202026-10-09%20at%2016.26.14.png" width="400px"/>
+				  <figcaption>Pre-split cube after 4 subdivisions (symmetric)</figcaption>
 				</td>
 			  </tr>
 			</table>
