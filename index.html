@@ -237,7 +237,7 @@
 		In <code>HalfedgeMesh::splitEdge</code>, I allocate all the new elements, then go through the 4 resulting triangles one at a time and call <code>setNeighbors</code> on the 3 halfedges of each. I reused h0 and h3 for the m to c part of the old edge, so h0 now starts at m instead of b. After that, I reassign the halfedge pointer of every vertex, edge and face involved. The new vertex m points to h0 so that its halfedge goes along the original edge, which is what the spec asks for. Like in the flip, b might have pointed at h0 before, which now starts at m, so I had to point b at a different halfedge.
 		</p>
 		<p>
-		I also set the <code>isNew</code> flags here because Part 6 needs them. m is marked as a new vertex. e0 and e1 are pieces of the original edge, so they are not new, while e2 and e3 are the new edges that cut across. For boundary edges, my implementation just returns without splitting, so I didn't do the boundary extra credit.
+		I also set the <code>isNew</code> flags here because Part 6 needs them. m is marked as a new vertex. e0 and e1 are pieces of the original edge, so they are not new, while e2 and e3 are the new edges that cut across. Boundary edges are handled separately, which I explain in the extra credit section below.
 		</p>
 		<h4>Before and after edge splits</h4>
 		<p>
@@ -277,6 +277,44 @@
 			</table>
 		</div>
 
+
+		<h4>Extra credit: splitting boundary edges</h4>
+		<p>
+		At first, <code>splitEdge</code> just returned early if the edge was on the boundary. For extra credit, I added a helper called <code>splitBoundaryEdge</code> that <code>splitEdge</code> now calls instead.
+		</p>
+		<p>
+		A boundary edge only has one real triangle next to it. The other side is the boundary "face", which is really just the hole in the mesh. So instead of turning 2 triangles into 4 like a normal split, I only split the one real triangle into 2. The new vertex m goes at the midpoint of the edge, and I connect it to the opposite corner of the real triangle.
+		</p>
+		<p>
+		Then I had to fix the boundary loop, which is the chain of boundary halfedges that goes around the hole. The old boundary halfedge now ends at m instead of going all the way across, and I added one new boundary halfedge from m to the other end. So the hole gets one more edge, and it goes through the new vertex. It follows the same pattern as my normal split: label everything, then reassign every pointer.
+		</p>
+		<p>
+		To test it, I used <code>dae/open_box.dae</code>, which is the cube with the top face removed so the rim of the box is a boundary. I kept splitting the newest piece of the same rim edge. Each split cuts the front face's triangle in two, so you can see a fan of new edges coming from the bottom corner, and the rim edge gets shorter each time. The edge info box shows <code>isBoundary() = 1</code>, so these really are boundary edges.
+		</p>
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: 100%; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="assets/part%205/extra_credit/Screenshot%202026-10-10%20at%2011.39.18.png" width="400px"/>
+				  <figcaption>Before: a boundary edge on the rim is selected (isBoundary() = 1)</figcaption>
+				</td>
+				<td style="text-align: center;">
+				  <img src="assets/part%205/extra_credit/Screenshot%202026-10-10%20at%2011.39.32.png" width="400px"/>
+				  <figcaption>After 1 boundary split</figcaption>
+				</td>
+			  </tr>
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="assets/part%205/extra_credit/Screenshot%202026-10-10%20at%2011.39.58.png" width="400px"/>
+				  <figcaption>After a 2 boundary splits</figcaption>
+				</td>
+				<td style="text-align: center;">
+				  <img src="assets/part%205/extra_credit/Screenshot%202026-10-10%20at%2011.40.06.png" width="400px"/>
+				  <figcaption>After 3 splits along the same rim edge</figcaption>
+				</td>
+			  </tr>
+			</table>
+		</div>
 
 		<h3>Part 6: Loop subdivision for mesh upsampling</h3>
 		<h4>How I implemented Loop subdivision</h4>
@@ -356,10 +394,33 @@
 			</table>
 		</div>
 
-		<h2>(Optional) Section III: Potential Extra Credit - Art Competition: Model something Creative</h2>
-		Submitted!
-		
+		<h4>Extra credit: Loop subdivision on meshes with boundaries</h4>
+		<p>
+		Since <code>splitEdge</code> can now split boundary edges, <code>upsample</code> works on open meshes too. But the normal Loop weights don't work well on the boundary. A boundary vertex has neighbors only on one side, so the normal rule pulls it inward and the hole shrinks and gets wavy. So I used different rules for anything on the boundary:
+		</p>
+		<ul>
+			<li><b>New vertex on a boundary edge:</b> I put it at the midpoint of the edge, \( \frac{1}{2}(A + B) \). There are no opposite corners C and D to use like for an interior edge.</li>
+			<li><b>Old vertex on the boundary:</b> I move it to \( \frac{3}{4}v + \frac{1}{8}(a + b) \), where a and b are its two neighbors along the boundary. I ignore its interior neighbors, so the boundary only gets smoothed along itself and doesn't get pulled into the mesh.</li>
+			<li><b>Everything inside the mesh:</b> same rules as before.</li>
 		</ul>
+		<p>
+		On the open box, the rim stays a clean edge after subdividing instead of breaking or shrinking. A closed mesh like the cube has no boundary, so it gives the same result as before.
+		</p>
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: 100%; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="assets/part6/extra_credit/Screenshot%202026-10-10%20at%2011.53.14.png" width="400px"/>
+				  <figcaption>Open box before subdivision</figcaption>
+				</td>
+				<td style="text-align: center;">
+				  <img src="assets/part6/extra_credit/Screenshot%202026-10-10%20at%2011.53.22.png" width="400px"/>
+				  <figcaption>Open box after a 3 rounds of Loop subdivision</figcaption>
+				</td>
+			  </tr>
+			</table>
+		</div>
+
 		</div>
 	</body>
 </html>
