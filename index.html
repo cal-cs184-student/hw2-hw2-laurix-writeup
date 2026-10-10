@@ -53,9 +53,7 @@
 		<p>
 		In Section 2, I worked with triangle meshes stored in a half-edge data structure. I computed area-weighted vertex normals for smooth shading, implemented edge flips and edge splits, and then used those two operations to build Loop subdivision, which makes a mesh smoother by splitting each triangle into 4 and moving the vertices.
 		</p>
-		<p>
-		The most interesting thing I learned was how much you can build out of a few simple operations. 
-		</p>
+		
 
 		<h2>Section I: Bezier Curves and Surfaces</h2>
 
@@ -173,18 +171,18 @@
 		</p>
 		<h4>Shading with and without vertex normals</h4>
 		<p>
-		Below is <code>dae/teapot.dae</code> with flat shading (the default) and with Phong shading using my vertex normals (pressing Q). With flat shading you can see the edges of every triangle. With Phong shading the teapot looks smooth and the lighting changes gradually across the surface.
+		Below is <code>dae/teapot.dae</code> with flat shading (the default) and with Phong shading using my vertex normals (pressing Q). I left the wireframe on in both so it's easy to compare. With flat shading, each triangle is one solid color, so you can see every face and the body looks striped. With Phong shading, the lighting changes gradually across the triangles and the teapot looks smooth, even though the mesh is exactly the same.
 		</p>
 
 		<div style="display: flex; flex-direction: column; align-items: center;">
 			<table style="width: 100%; text-align: center; border-collapse: collapse;">
 			  <tr>
 				<td style="text-align: center;">
-				  <img src="assets/part%203/Screenshot%202026-10-09%20at%2004.27.29.png" width="400px"/>
+				  <img src="assets/part%203/Screenshot%202026-10-10%20at%2012.00.52.png" width="400px"/>
 				  <figcaption>Teapot with flat shading (no vertex normals)</figcaption>
 				</td>
 				<td style="text-align: center;">
-				  <img src="assets/part%203/Screenshot%202026-10-09%20at%2004.27.21.png" width="400px"/>
+				  <img src="assets/part%203/Screenshot%202026-10-10%20at%2012.00.45.png" width="400px"/>
 				  <figcaption>Teapot with Phong shading (area-weighted vertex normals)</figcaption>
 				</td>
 			  </tr>
